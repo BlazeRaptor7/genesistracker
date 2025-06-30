@@ -33,7 +33,7 @@ st.markdown("""
         .stApp{
             width: 100vw;
             box-sizing: border-box;
-            background-image: url('https://images.pexels.com/photos/5011647/pexels-photo-5011647.jpeg');
+            background: linear-gradient(120deg, #f2f4f6, #e0e7ec);
             background-size: cover;
             background-attachment: fixed;
             background-position: center;
