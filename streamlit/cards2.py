@@ -14,7 +14,25 @@ client = MongoClient(dbconn)
 db = client['virtualgenesis']
 
 # UI elements
-st.set_page_config(layout="wide")
+# Collapse sidebar by default
+st.set_page_config(layout="wide", initial_sidebar_state="collapsed")
+
+# Your custom sidebar content
+with st.sidebar:
+    st.markdown("## Navigation")
+    st.markdown("You can add filters or controls here.")
+    st.markdown("---")
+    st.markdown("Made with ❤️ for Genesis Analytics.")
+
+# Hide default navigation links (from /pages)
+st.markdown("""
+    <style>
+    [data-testid="stSidebarNav"] {
+        display: none;
+    }
+    </style>
+""", unsafe_allow_html=True)
+
 st.markdown("""
     <style>
     h1 {
