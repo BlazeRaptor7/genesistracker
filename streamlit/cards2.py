@@ -33,7 +33,7 @@ st.markdown("""
         .stApp{
             width: 100vw;
             box-sizing: border-box;
-            background: linear-gradient(120deg, #f2f4f6, #e0e7ec);
+            background: linear-gradient(120deg, #5497c8, #285f87);
             background-size: cover;
             background-attachment: fixed;
             background-position: center;
