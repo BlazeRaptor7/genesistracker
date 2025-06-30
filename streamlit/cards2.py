@@ -16,7 +16,15 @@ db = client['virtualgenesis']
 # UI elements
 # Collapse sidebar by default
 st.set_page_config(layout="wide", initial_sidebar_state="collapsed")
-
+st.markdown("""
+<style>
+/* Hide Streamlit's default top menu */
+header[data-testid="stHeader"] {
+    background: transparent;
+    visibility: hidden;
+}
+</style>
+""", unsafe_allow_html=True)
 # Your custom sidebar content
 with st.sidebar:
     st.markdown("## Navigation")
