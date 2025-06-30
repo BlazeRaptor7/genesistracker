@@ -54,10 +54,9 @@ st.markdown("""
     box-shadow: 0 4px 12px rgba(0,0,0,0.1);
     transition: transform 0.2s ease, box-shadow 0.2s ease;
     min-height: 200px;
-    border: 1px solid rgba(255, 255, 255, 0.4);
 }
 .card:hover {
-    transform: translateY(-4px);
+    transform: translateY(-7px);
     box-shadow: 0 4px 12px rgba(0,0,0,0.15);
     color:white;
 }
