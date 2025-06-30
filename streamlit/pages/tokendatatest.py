@@ -78,7 +78,7 @@ st.markdown("""
         .stApp{
             width: 100vw;
             box-sizing: border-box;
-            background: #013155;
+            background: linear-gradient(90deg,rgba(0, 136, 194, 1) 0%, rgba(5, 27, 64, 1) 100%);
     }}
     </style>
 """, unsafe_allow_html=True)
