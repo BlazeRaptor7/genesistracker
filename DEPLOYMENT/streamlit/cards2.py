@@ -42,7 +42,8 @@ st.markdown("""
 """, unsafe_allow_html=True)
 
 # Fetch list of symbols
-tokens = [doc["symbol"] for doc in db["New Persona"].find({}, {'symbol':1, '_id':0})]
+#tokens = [doc["symbol"] for doc in db["New Persona"].find({}, {'symbol':1, '_id':0})]
+tokens = ["TEST"]
 #CSS
 st.markdown("""
 <style>
