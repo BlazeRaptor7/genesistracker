@@ -265,7 +265,7 @@ html_table = filtered_df.to_html(escape=False, index=False)
 scrollable_style = """
 <style>
 .scrollable {max-height:600px; overflow-y:auto; overflow-x:auto;  width: 78vw;  margin-right:2w;  box-sizing: border-box;  display:flex;  justify-content : flex-start; font-family: 'Epilogue', sans-serif; font-size: 14px; color: #222;}
-.scrollable table {  backdrop-filter: blur(10px); background: rgba(255, 255, 255, 0.8);     width:100%;  border-collapse: collapse; border-spacing:0; border-radius: 8px; overflow: hidden; box-shadow: 0 2px 8px rgba(0,0,0,0.08); margin-left:0;  margin-right:0;  margin: 0 auto 0 0;  table-layout: auto;  text-align:center;}
+.scrollable table {  backdrop-filter: blur(10px); background: rgba(255, 255, 255, 0.8);     width:100vw;  border-collapse: collapse; border-spacing:0; border-radius: 8px; overflow: hidden; box-shadow: 0 2px 8px rgba(0,0,0,0.08); margin-left:0;  margin-right:0;  margin: 0 auto 0 0;  table-layout: auto;  text-align:center;}
 .scrollable th, .scrollable td { padding:12px 16px;  border-bottom: 1px solid #ddd; text-align: center; min-width: 120px; border:1px solid #ccc;   min-width:120px;  font-size:16px; font-weight:400;}
 .scrollable th { position: sticky; top:0; background:#1c3f4f; color:#fff; text-transform:uppercase; text-align:center; font-weight:600;}
 </style>
