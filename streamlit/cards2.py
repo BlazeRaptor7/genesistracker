@@ -33,7 +33,7 @@ st.markdown("""
         .stApp{
             width: 100vw;
             box-sizing: border-box;
-            background: #03497c;
+            background: #013155;
             background-size: cover;
             background-attachment: fixed;
             background-position: center;
