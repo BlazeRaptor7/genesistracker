@@ -21,7 +21,7 @@ st.markdown("""
 /* Hide Streamlit's default top menu */
 header[data-testid="stHeader"] {
     background: transparent;
-    visibility: hidden;
+    visibility: visible;
 }
 </style>
 """, unsafe_allow_html=True)
