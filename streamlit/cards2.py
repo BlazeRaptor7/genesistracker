@@ -16,7 +16,15 @@ db = client['virtualgenesis']
 # UI elements
 # Collapse sidebar by default
 st.set_page_config(layout="wide", initial_sidebar_state="collapsed")
-
+st.markdown("""
+<style>
+/* Hide Streamlit's default top menu */
+header[data-testid="stHeader"] {
+    background: transparent;
+    visibility: visible;
+}
+</style>
+""", unsafe_allow_html=True)
 # Your custom sidebar content
 with st.sidebar:
     st.markdown("## Navigation")
@@ -34,10 +42,9 @@ st.markdown("""
 
     /* Frosted sidebar style */
     section[data-testid="stSidebar"] {
-        background: rgba(255, 255, 255, 0.15);
+        background: rgba(255, 255, 255, 0.35);
         backdrop-filter: blur(10px);
         -webkit-backdrop-filter: blur(10px);
-        border-right: 1px solid rgba(255, 255, 255, 0.3);
         box-shadow: 2px 0 10px rgba(0, 0, 0, 0.1);
     }
 
