@@ -48,12 +48,13 @@ st.markdown("""
 <style>
 .card {
     backdrop-filter: blur(12px);
-    background: rgba(120, 120, 120, 0.6);
+    background: rgba(255, 255, 255, 0.25);;
     padding: 16px;
     border-radius: 12px;
-    box-shadow: 0 2px 6px rgba(0,0,0,0.1);
+    box-shadow: 0 4px 12px rgba(0,0,0,0.1);
     transition: transform 0.2s ease, box-shadow 0.2s ease;
     min-height: 200px;
+    border: 1px solid rgba(255, 255, 255, 0.4);
 }
 .card:hover {
     transform: translateY(-4px);
