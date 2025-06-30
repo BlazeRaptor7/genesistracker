@@ -22,13 +22,28 @@ with st.sidebar:
     st.markdown("## Navigation")
     st.markdown("You can add filters or controls here.")
     st.markdown("---")
-    st.markdown("Made with ❤️ for Genesis Analytics.")
+    st.markdown("Made for Genesis Analytics.")
 
 # Hide default navigation links (from /pages)
 st.markdown("""
     <style>
+    /* Hide Streamlit's default page nav */
     [data-testid="stSidebarNav"] {
         display: none;
+    }
+
+    /* Frosted sidebar style */
+    section[data-testid="stSidebar"] {
+        background: rgba(255, 255, 255, 0.15);
+        backdrop-filter: blur(10px);
+        -webkit-backdrop-filter: blur(10px);
+        border-right: 1px solid rgba(255, 255, 255, 0.3);
+        box-shadow: 2px 0 10px rgba(0, 0, 0, 0.1);
+    }
+
+    /* Optional: style the text inside sidebar */
+    section[data-testid="stSidebar"] .markdown-text-container {
+        color: white !important;
     }
     </style>
 """, unsafe_allow_html=True)
