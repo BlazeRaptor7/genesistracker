@@ -255,7 +255,7 @@ scrollable_style = """
     text-align: center; min-width: 120px; font-size:16px; font-weight:400;
 }
 .scrollable th {
-    position: sticky; top:0; backdrop-filter: blur(10px); background: rgba(80, 80, 80, 0.1); color:#fff;
+    position: sticky; top:0; background: rgba(80, 80, 80, 0.8); color:#fff;
     text-transform:uppercase; font-weight:600;
 }
 </style>
