@@ -5,22 +5,15 @@ import pandas as pd
 import streamlit as st
 from pymongo import MongoClient
 import streamlit.components.v1 as components
-st.set_page_config(layout="wide")
-st.markdown("""
-<style>
-/* Hide Streamlit's default top menu */
-header[data-testid="stHeader"] {
-    background: transparent;
-    visibility: visible;
-}
-</style>
-""", unsafe_allow_html=True)
+st.set_page_config(layout="wide", initial_sidebar_state="collapsed")
+
 # Your custom sidebar content
 with st.sidebar:
     st.markdown("## Navigation")
     st.markdown("You can add filters or controls here.")
     st.markdown("---")
     st.markdown("Made for Genesis Analytics.")
+
 # Hide default navigation links (from /pages)
 st.markdown("""
     <style>
@@ -28,6 +21,7 @@ st.markdown("""
     [data-testid="stSidebarNav"] {
         display: none;
     }
+
     /* Frosted sidebar style */
     section[data-testid="stSidebar"] {
         background: rgba(255, 255, 255, 0.15);
@@ -36,12 +30,14 @@ st.markdown("""
         border-right: 1px solid rgba(255, 255, 255, 0.3);
         box-shadow: 2px 0 10px rgba(0, 0, 0, 0.1);
     }
+
     /* Optional: style the text inside sidebar */
     section[data-testid="stSidebar"] .markdown-text-container {
         color: white !important;
     }
     </style>
 """, unsafe_allow_html=True)
+
 # Global CSS for white headers and tighter spacing in radio buttons
 st.markdown("""
     <style>
@@ -51,6 +47,8 @@ st.markdown("""
     }
     </style>
 """, unsafe_allow_html=True)
+
+
 # Load env and connect
 load_dotenv()
 dbconn = os.environ.get("MongoLink")
@@ -58,6 +56,7 @@ client = MongoClient(dbconn)
 db = client['virtualgenesis']
 query_params = st.query_params  # direct access
 token = query_params.get('token', '').lower().strip()
+
 if not token:
     st.error("No token specified. Please navigate back and choose a token.")
     st.stop()
@@ -79,7 +78,7 @@ st.markdown("""
         .stApp{
             width: 100vw;
             box-sizing: border-box;
-            background: #013155;
+            background: radial-gradient(circle,rgba(18, 73, 97, 1) 0%, rgba(5, 27, 64, 1) 100%);
     }}
     </style>
 """, unsafe_allow_html=True)
@@ -175,8 +174,7 @@ with st.container():
             label="",
             value=(min_date, max_date),
             min_value=min_date,
-            max_value=max_date,
-            label_visibility="collapsed"
+            max_value=max_date
         )
 
     with col4:
@@ -266,42 +264,9 @@ html_table = filtered_df.to_html(escape=False, index=False)
 # CSS
 scrollable_style = """
 <style>
-.scrollable {
-    max-height:600px; 
-    overflow-y:auto; 
-    overflow-x:auto;  
-    width: 78vw;  
-    margin-right:2w;  
-    box-sizing: border-box;  
-    display:flex;  
-    justify-content : flex-start; 
-    font-family: 'Epilogue', sans-serif; 
-    font-size: 14px; 
-    color: #222;
-}
-.scrollable table {  
-    backdrop-filter: blur(10px); 
-    background: rgba(255, 255, 255, 0.8);
-    width:100%;  
-    border-collapse: collapse; 
-    border-spacing:0; 
-    border-radius: 8px; 
-    overflow: hidden; 
-    box-shadow: 0 2px 8px rgba(0,0,0,0.08); 
-    margin-left:0;  margin-right:0;  margin: 0 auto 0 0;  
-    table-layout: auto;  
-    text-align:center;
-}
-.scrollable th, .scrollable td { 
-    padding:12px 16px;  
-    border-bottom: 1px solid #ddd; 
-    text-align: center; 
-    min-width: 120px; 
-    border:1px solid #ccc;   
-    min-width:120px;  
-    font-size:16px; 
-    font-weight:400;
-}
+.scrollable {max-height:600px; overflow-y:auto; overflow-x:auto;  width: 78vw;  margin-right:2w;  box-sizing: border-box;  display:flex;  justify-content : flex-start; font-family: 'Epilogue', sans-serif; font-size: 14px; color: #222;}
+.scrollable table {  backdrop-filter: blur(10px); background: rgba(255, 255, 255, 0.8);     width:100vw;  border-collapse: collapse; border-spacing:0; border-radius: 8px; overflow: hidden; box-shadow: 0 2px 8px rgba(0,0,0,0.08); margin-left:0;  margin-right:0;  margin: 0 auto 0 0;  table-layout: auto;  text-align:center;}
+.scrollable th, .scrollable td { padding:12px 16px;  border-bottom: 1px solid #ddd; text-align: center; min-width: 120px; border:1px solid #ccc;   min-width:120px;  font-size:16px; font-weight:400;}
 .scrollable th { position: sticky; top:0; background:#1c3f4f; color:#fff; text-transform:uppercase; text-align:center; font-weight:600;}
 </style>
 """
