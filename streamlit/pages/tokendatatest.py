@@ -5,8 +5,15 @@ import pandas as pd
 import streamlit as st
 from pymongo import MongoClient
 import streamlit.components.v1 as components
-st.set_page_config(layout="wide", initial_sidebar_state="collapsed")
-
+st.set_page_config(layout="wide")
+st.markdown("""
+<style>
+/* Hide Streamlit's default top menu */
+header[data-testid="stHeader"] {
+    background: transparent;
+    visibility: visible;
+}
+</style>
 # Your custom sidebar content
 with st.sidebar:
     st.markdown("## Navigation")
