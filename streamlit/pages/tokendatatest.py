@@ -14,6 +14,7 @@ header[data-testid="stHeader"] {
     visibility: visible;
 }
 </style>
+""", unsafe_allow_html=True)
 # Your custom sidebar content
 with st.sidebar:
     st.markdown("## Navigation")
