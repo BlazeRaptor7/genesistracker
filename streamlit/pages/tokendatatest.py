@@ -187,7 +187,7 @@ with st.container():
 
     with col4:
         st.markdown("<div style='color: white; font-weight: 500; margin-bottom: 0px;'>Sort by</div>", unsafe_allow_html=True)
-        sort_col = st.selectbox("", filtered_df.columns.tolist())
+        sort_col = st.selectbox(label="", filtered_df.columns.tolist(), label_visibility="collapsed")
 
     with col5:
         st.markdown("<div style='color: white; font-weight: 500; margin-bottom: 0px;'>Order</div>", unsafe_allow_html=True)
@@ -202,7 +202,7 @@ with st.container():
 
     with col10:
         st.markdown("<div style='color: white; font-weight: 500; margin-bottom: 0px;'>Search BLOCK or MAKER</div>", unsafe_allow_html=True)
-        search_query = st.text_input("")
+        search_query = st.text_input(label="", label_visibility="collapsed")
         if search_query:
             search_query = search_query.strip().lower()
             filtered_df = filtered_df[
@@ -251,7 +251,8 @@ with st.container():
                     max_value=float(col_max),
                     value=(float(col_min), float(col_max)),
                     step=0.000001,
-                    format="%.6f"
+                    format="%.6f",
+                    label_visibility="collapsed"
                 )
                 filtered_df = filtered_df[
                     (filtered_df[selected_col] >= value_range[0]) &
