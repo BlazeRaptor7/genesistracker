@@ -15,7 +15,7 @@ db = client['virtualgenesis']
 
 # UI elements
 # Collapse sidebar by default
-st.set_page_config(layout="wide", initial_sidebar_state="collapsed")
+st.set_page_config(layout="wide")
 st.markdown("""
 <style>
 /* Hide Streamlit's default top menu */
