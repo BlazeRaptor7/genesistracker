@@ -99,7 +99,30 @@ def render_sidebar():
     """Render the custom sidebar with navigation and branding."""
     with st.sidebar:
         st.markdown("## Navigation")
-        st.markdown("You can add filters or controls here.")
+        #HERE, WE CHECK WHICH PAGE WE ARE ON AND LATER USE IT TO HIGHLIGHT THE CURRENT PAGE
+        current_script = os.path.basename(__file__).lower()
+        routes = [
+            ("Token Transactions", "/cards2", "cards2.py"),
+            ("Token Analytics", "/tokenanalytics", "tokenanalytics.py")
+        ]
+        for label, path, filename in routes:
+            is_active = filename.lower() == current_script
+            bg = "#124961" if is_active else "transparent"
+            st.markdown(
+                f"""
+                <a href="{path}" style="
+                    display: block;
+                    padding: 0.5rem 1rem;
+                    margin-bottom: 0.5rem;
+                    font-weight: bold;
+                    border-radius: 6px;
+                    color: white;
+                    background-color: {bg};
+                    text-decoration: none;
+                ">{label}</a>
+                """,
+                unsafe_allow_html=True
+            )
         st.markdown("---")
         st.markdown("Made for Genesis Analytics.")
 
