@@ -107,7 +107,9 @@ tabdf = tabdf[[
 tabdf["MAKER"] = tabdf["MAKER"].apply(lambda addr: f"<span title='{addr}'>{addr[:10]}...</span>" if isinstance(addr, str) else addr)
 tabdf["TIME_PARSED"] = pd.to_datetime(tabdf["TIME"], errors='coerce')
 tabdf["TX_TYPE_RAW"] = tabdf["TX TYPE"].str.extract(r">(\w+)<")
+tabdf["USD VALUE (GENESIS)"] = (tabdf[token.upper()] * tabdf["GENESIS \nPRICE ($)"]).round(4)
 filtered_df = tabdf.copy()
+st.write("COLUMNS:", filtered_df.columns.tolist())
 
 # ───── Filters: Panel 1 ─────
 with st.container():
@@ -179,6 +181,14 @@ with st.container():
 #--TABLE RENDERING
 filtered_df = filtered_df.sort_values(by=sort_col, ascending=(sort_dir == "Ascending"))
 filtered_df = filtered_df.drop(columns=["TX_TYPE_RAW", "TIME_PARSED"], errors="ignore")
+#ordering columns
+ordered_cols = [
+    "BLOCK", "TX HASH", "MAKER", "TX TYPE", "SWAP TYPE", "TIME",
+    token.upper(), "VIRTUAL", "GENESIS \nPRICE ($)", "USD VALUE (GENESIS)",
+    "GENESIS PRICE \n($VIRTUAL)", "VIRTUAL \nPRICE ($)"
+]
+filtered_df = filtered_df[[col for col in ordered_cols if col in filtered_df.columns]]
+
 html_table = filtered_df.to_html(escape=False, index=False)
 #-- CSS FOR THE TABLE
 scrollable_style = """
@@ -199,7 +209,7 @@ scrollable_style = """
     text-align: center; min-width: 120px; font-size:16px; font-weight:400;
 }
 .scrollable th {
-    position: sticky; top:0; background:rgba(255,255,255,0.1); color:#fff;
+    position: static; top:0; background:rgba(255,255,255,0.1); color:#fff;
     text-transform:uppercase; font-weight:600;
 }
 </style>
