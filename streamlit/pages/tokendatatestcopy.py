@@ -161,7 +161,7 @@ with st.container():
     col6, col7 = st.columns([1, 4])
     with col6:
         st.markdown("<div style='color: white; font-weight: 500;'>Filter by</div>", unsafe_allow_html=True)
-        numeric_columns = [token.upper(), "VIRTUAL", "GENESIS \nPRICE ($)", "GENESIS PRICE \n($VIRTUAL)", "VIRTUAL \nPRICE ($)"]
+        numeric_columns = [token.upper(), "VIRTUAL", "GENESIS \nPRICE ($)", "USD VALUE (GENESIS)", "GENESIS PRICE \n($VIRTUAL)", "VIRTUAL \nPRICE ($)"]
         selected_col = st.selectbox("", numeric_columns)
 
     with col7:
