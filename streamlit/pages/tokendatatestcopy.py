@@ -91,6 +91,23 @@ if not token:
 
 st.markdown(f"<h1 style='margin-top: 0rem; color: white;'>TOKEN {token.upper()}</h1>", unsafe_allow_html=True)
 
+doc = db["New Persona"].find_one({"symbol": token.upper()})
+if doc:
+    name = doc.get("name", "N/A")
+    token_addr = doc.get("token", "N/A")
+    dao_addr = doc.get("dao", "N/A")
+    lp_addr = doc.get("lp", "N/A")
+    timestamp = int(doc.get("timestamp", 0))
+    launch_time = datetime.fromtimestamp(timestamp, tz=timezone.utc).strftime('%d-%m-%Y %H:%M')
+
+    with st.popover("Know more about token", help="Click to view token details"):
+        st.markdown(f"**Name:** {name}")
+        st.markdown(f"**Launch Time:** {launch_time}")
+        st.markdown(f"**Token Address:** `{token_addr}`")
+        st.markdown(f"**DAO Address:** `{dao_addr}`")
+        st.markdown(f"**LP Address:** `{lp_addr}`")
+
+
 # ───── Collection Naming ─────
 token_in_col = f"{token.upper()}_IN"
 token_out_col = f"{token.upper()}_OUT"
