@@ -18,6 +18,11 @@ db = client['virtualgenesis']
 # --GLOBAL CSS
 st.markdown("""
 <style>
+/* Remove top padding in main block */
+section.main > div:first-child {
+    padding-top: 0rem;
+    margin-top: -3rem;
+}
 header[data-testid="stHeader"] {
     background: transparent;
     visibility: visible;
