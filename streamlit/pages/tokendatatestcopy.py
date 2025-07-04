@@ -107,7 +107,7 @@ tabdf = tabdf[[
 tabdf["MAKER"] = tabdf["MAKER"].apply(lambda addr: f"<span title='{addr}'>{addr[:10]}...</span>" if isinstance(addr, str) else addr)
 tabdf["TIME_PARSED"] = pd.to_datetime(tabdf["TIME"], errors='coerce')
 tabdf["TX_TYPE_RAW"] = tabdf["TX TYPE"].str.extract(r">(\w+)<")
-tabdf["USD VALUE (GENESIS)"] = (tabdf[token.upper()] * tabdf["GENESIS \nPRICE ($)"]).round(4)
+tabdf["TRANSACTION VALUE ($)"] = (tabdf[token.upper()] * tabdf["GENESIS \nPRICE ($)"]).round(4)
 filtered_df = tabdf.copy()
 
 # ───── Filters: Panel 1 ─────
