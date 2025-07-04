@@ -12,9 +12,8 @@ st.set_page_config(layout="wide")
 st.markdown("""
     <style>
     /* Remove top padding in main block */
-    main.block-container {
-        padding-top: 0rem !important;
-        margin-top: -2rem !important;
+    .block-container {
+        padding-top: 1rem !important;
     }
     header[data-testid="stHeader"] {
         background: transparent;
@@ -90,7 +89,7 @@ if not token:
     st.error("No token specified. Please navigate back and choose a token.")
     st.stop()
 
-st.markdown(f"<h1 style='color: white;'>TRANSACTION TABLE FOR {token.upper()}</h1>", unsafe_allow_html=True)
+st.markdown("<h1 style='margin-top: 0rem; color: white;'>TOKEN {token.upper()}</h1>", unsafe_allow_html=True)
 
 # ───── Collection Naming ─────
 token_in_col = f"{token.upper()}_IN"
