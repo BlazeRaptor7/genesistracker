@@ -3,6 +3,7 @@ import os
 from dotenv import load_dotenv
 import streamlit as st
 from pymongo import MongoClient
+from datetime import datetime, timezone
 
 #--STREAMLIT CONFIGURATION
 st.set_page_config(layout="wide")
@@ -143,6 +144,13 @@ def get_names_for_token(db, token):
     )
 
 #--RENDERING TOKEN CARDS
+from datetime import datetime, timezone
+
+def shorten(addr):
+    if isinstance(addr, str) and addr.startswith("0x") and len(addr) > 10:
+        return addr[:6] + "..." + addr[-4:]
+    return addr
+
 def render_token_cards(db, tokens, num_cols=5):
     for i in range(0, len(tokens), num_cols):
         chunk = tokens[i:i + num_cols]
@@ -150,11 +158,25 @@ def render_token_cards(db, tokens, num_cols=5):
             cols = st.columns(num_cols, vertical_alignment="center")
             for j, token in enumerate(chunk):
                 with cols[j]:
-                    names_html = get_names_for_token(db, token)
+                    doc = db["New Persona"].find_one({"symbol": token})
+                    if not doc:
+                        continue
+
+                    name = doc.get("name", "N/A")
+                    token_address = shorten(doc.get("token", "N/A"))
+                    dao_address = shorten(doc.get("dao", "N/A"))
+                    lp_address = shorten(doc.get("lp", "N/A"))
+                    timestamp = int(doc.get("timestamp", 0))
+                    launch_time = datetime.fromtimestamp(timestamp, tz=timezone.utc).strftime('%d-%m-%Y %H:%M')
+
                     card_html = f"""
                     <div class="card">
                         <h1>{token}</h1>
-                        {names_html}
+                        <p><b>Name:</b> {name}</p>
+                        <p><b>Launch Time:</b> {launch_time}</p>
+                        <p><b>Token:</b> {token_address}</p>
+                        <p><b>DAO:</b> {dao_address}</p>
+                        <p><b>LP:</b> {lp_address}</p>
                         <a href="/tokendatatestcopy?token={token}" target="_blank">See TXNs</a>
                     </div>
                     """
