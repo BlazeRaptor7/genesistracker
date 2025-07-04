@@ -12,9 +12,9 @@ st.set_page_config(layout="wide")
 st.markdown("""
     <style>
     /* Remove top padding in main block */
-    section.main > div:first-child {
-        padding-top: 0rem;
-        margin-top: -3rem;
+    main.block-container {
+        padding-top: 0rem !important;
+        margin-top: -2rem !important;
     }
     header[data-testid="stHeader"] {
         background: transparent;
