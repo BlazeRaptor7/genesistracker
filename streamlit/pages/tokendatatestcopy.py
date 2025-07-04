@@ -42,11 +42,36 @@ st.markdown("""
 """, unsafe_allow_html=True)
 
 # ───── Sidebar ─────
-with st.sidebar:
-    st.markdown("## Navigation")
-    st.markdown("You can add filters or controls here.")
-    st.markdown("---")
-    st.markdown("Made for Genesis Analytics.")
+def render_sidebar():
+    current_script = "tokendatatestcopy.py"  # set manually
+    routes = [
+        ("Token Transactions", "/cards2", "cards2.py"),
+        ("Token Analytics", "/tokenanalytics", "tokenanalytics.py")
+    ]
+    with st.sidebar:
+        st.markdown("## Navigation")
+        for label, path, filename in routes:
+            is_active = filename.lower() == current_script
+            bg = "#124961" if is_active else "transparent"
+            st.markdown(
+                f"""
+                <a href="{path}" style="
+                    display: block;
+                    padding: 0.5rem 1rem;
+                    margin-bottom: 0.5rem;
+                    font-weight: bold;
+                    border-radius: 6px;
+                    color: white;
+                    background-color: {bg};
+                    text-decoration: none;
+                ">{label}</a>
+                """,
+                unsafe_allow_html=True
+            )
+        st.markdown("---")
+        st.markdown("Made for Genesis Analytics.")
+
+render_sidebar()
 
 # ───── Load DB Connection ─────
 load_dotenv()
@@ -110,143 +135,152 @@ tabdf["TX_TYPE_RAW"] = tabdf["TX TYPE"].str.extract(r">(\w+)<")
 tabdf["TRANSACTION VALUE ($)"] = (tabdf[token.upper()] * tabdf["GENESIS \nPRICE ($)"]).round(4)
 filtered_df = tabdf.copy()
 
-# ───── Filters: Panel 1 ─────
-with st.container():
-    col1, col2, col3, col4, col5, col10 = st.columns(6)
+tab1, tab2, tab3 = st.tabs(["TRANSCTIONS", "TOKEN ANALYTICS", "TAB 3"])
 
-    with col1:
-        st.markdown("<div style='color: white; font-weight: 500;'>Transaction Type</div>", unsafe_allow_html=True)
-        swap_filter = st.segmented_control("", options=["all", "buy", "sell"], default="all")
-
-    with col2:
-        st.markdown("<div style='color: white; font-weight: 500;'>Swap Type</div>", unsafe_allow_html=True)
-        label_options = ["All"] + sorted(tabdf["SWAP TYPE"].dropna().unique())
-        label_filter = st.selectbox("", label_options)
-
-    with col3:
-        st.markdown("<div style='color: white; font-weight: 500;'>Date Range</div>", unsafe_allow_html=True)
-        date_range = st.date_input("", value=(tabdf["TIME_PARSED"].min(), tabdf["TIME_PARSED"].max()))
-
-    with col4:
-        st.markdown("<div style='color: white; font-weight: 500;'>Sort by</div>", unsafe_allow_html=True)
-        sort_col = st.selectbox("", filtered_df.columns.tolist())
-
-    with col5:
-        st.markdown("<div style='color: white; font-weight: 500;'>Order</div>", unsafe_allow_html=True)
-        sort_dir = st.radio("", options=["Ascending", "Descending"], horizontal=True)
-
-    with col10:
-        st.markdown("<div style='color: white; font-weight: 500;'>Search BLOCK or MAKER</div>", unsafe_allow_html=True)
-        search_query = st.text_input("")
-        if search_query:
-            q = search_query.strip().lower()
-            filtered_df = filtered_df[
-                filtered_df["BLOCK"].astype(str).str.contains(q) |
-                filtered_df["MAKER"].str.lower().str.contains(q)
-            ]
-
-# ───── Apply Filters ─────
-if swap_filter != "all":
-    filtered_df = filtered_df[filtered_df["TX_TYPE_RAW"].str.lower() == swap_filter.lower()]
-if label_filter != "All":
-    filtered_df = filtered_df[filtered_df["SWAP TYPE"] == label_filter]
-if isinstance(date_range, tuple) and len(date_range) == 2:
-    start_date = pd.to_datetime(date_range[0])
-    end_date = pd.to_datetime(date_range[1]) + timedelta(days=1)
-    filtered_df = filtered_df[(filtered_df["TIME_PARSED"] >= start_date) & (filtered_df["TIME_PARSED"] <= end_date)]
-
-# ───── Filters: Panel 2 (Numeric Range) ─────
-with st.container():
-    col6, col7 = st.columns([1, 4])
-    with col6:
-        st.markdown("<div style='color: white; font-weight: 500;'>Filter by</div>", unsafe_allow_html=True)
-        numeric_columns = [token.upper(), "VIRTUAL", "GENESIS \nPRICE ($)", "TRANSACTION VALUE ($)", "GENESIS PRICE \n($VIRTUAL)", "VIRTUAL \nPRICE ($)"]
-        selected_col = st.selectbox("", numeric_columns)
-
-    with col7:
-        if selected_col in filtered_df.columns and not filtered_df[selected_col].dropna().empty:
-            col_min, col_max = filtered_df[selected_col].min(), filtered_df[selected_col].max()
-            if pd.notnull(col_min) and pd.notnull(col_max) and col_min != col_max:
-                st.markdown(f"<div style='color: white; font-weight: 500;'>Range for {selected_col}</div>", unsafe_allow_html=True)
-                value_range = st.slider(
-                    "", float(col_min), float(col_max), (float(col_min), float(col_max)),
-                    step=0.000001, format="%.6f"
-                )
+with tab1:
+    # ───── Filters: Panel 1 ─────
+    with st.container():
+        col1, col2, col3, col4, col5, col10 = st.columns(6)
+    
+        with col1:
+            st.markdown("<div style='color: white; font-weight: 500;'>Transaction Type</div>", unsafe_allow_html=True)
+            swap_filter = st.segmented_control("", options=["all", "buy", "sell"], default="all")
+    
+        with col2:
+            st.markdown("<div style='color: white; font-weight: 500;'>Swap Type</div>", unsafe_allow_html=True)
+            label_options = ["All"] + sorted(tabdf["SWAP TYPE"].dropna().unique())
+            label_filter = st.selectbox("", label_options)
+    
+        with col3:
+            st.markdown("<div style='color: white; font-weight: 500;'>Date Range</div>", unsafe_allow_html=True)
+            date_range = st.date_input("", value=(tabdf["TIME_PARSED"].min(), tabdf["TIME_PARSED"].max()))
+    
+        with col4:
+            st.markdown("<div style='color: white; font-weight: 500;'>Sort by</div>", unsafe_allow_html=True)
+            sort_col = st.selectbox("", filtered_df.columns.tolist())
+    
+        with col5:
+            st.markdown("<div style='color: white; font-weight: 500;'>Order</div>", unsafe_allow_html=True)
+            sort_dir = st.radio("", options=["Ascending", "Descending"], horizontal=True)
+    
+        with col10:
+            st.markdown("<div style='color: white; font-weight: 500;'>Search BLOCK or MAKER</div>", unsafe_allow_html=True)
+            search_query = st.text_input("")
+            if search_query:
+                q = search_query.strip().lower()
                 filtered_df = filtered_df[
-                    (filtered_df[selected_col] >= value_range[0]) &
-                    (filtered_df[selected_col] <= value_range[1])
+                    filtered_df["BLOCK"].astype(str).str.contains(q) |
+                    filtered_df["MAKER"].str.lower().str.contains(q)
                 ]
-
-#--TABLE RENDERING
-filtered_df = filtered_df.sort_values(by=sort_col, ascending=(sort_dir == "Ascending"))
-filtered_df = filtered_df.drop(columns=["TX_TYPE_RAW", "TIME_PARSED"], errors="ignore")
-#ordering columns
-ordered_cols = [
-    "BLOCK", "TX HASH", "MAKER", "TX TYPE", "SWAP TYPE", "TIME",
-    token.upper(), "VIRTUAL", "GENESIS \nPRICE ($)", "TRANSACTION VALUE ($)",
-    "GENESIS PRICE \n($VIRTUAL)", "VIRTUAL \nPRICE ($)"
-]
-filtered_df = filtered_df[[col for col in ordered_cols if col in filtered_df.columns]]
-
-html_table = filtered_df.to_html(escape=False, index=False)
-#-- CSS FOR THE TABLE
-scrollable_style = """
-<style>
-/* Wrapper container for scrollable table */
-.scrollable {
-    max-height: 600px;
-    overflow-y: auto;
-    overflow-x: auto;
-    width: 78vw;
-    box-sizing: border-box;
-    display: block;
-    font-family: 'Epilogue', sans-serif;
-    font-size: 14px;
-    color: #222;
-}
-
-/* Table styling */
-.scrollable table {
-    width: 100%;
-    backdrop-filter: blur(10px);
-    background: rgba(255, 255, 255, 0.8);
-    border-radius: 8px;
-    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.08);
-    margin: 0 auto 0 0;
-    table-layout: auto;
-    text-align: center;
-    border-collapse: separate;
-    border-spacing: 0;
-}
-
-/* Table headers and cells */
-.scrollable th,
-.scrollable td {
-    padding: 12px 16px;
-    text-align: center;
-    min-width: 120px;
-    font-size: 16px;
-    font-weight: 400;
-}
-
-/* Header styling */
-.scrollable th {
-    background: rgba(70, 70, 70, 0.8);
-    color: #fff;
-    text-transform: uppercase;
-    font-weight: 600;
-}
-
-/* Rounded top corners on first and last th */
-.scrollable th:first-child {
-    border-top-left-radius: 8px;
-}
-.scrollable th:last-child {
-    border-top-right-radius: 8px;
-}
-</style>
-"""
-
-with st.container():
-    st.markdown(scrollable_style, unsafe_allow_html=True)
-    st.markdown(f"<div class='scrollable'>{html_table}</div>", unsafe_allow_html=True)
+    
+    # ───── Apply Filters ─────
+    if swap_filter != "all":
+        filtered_df = filtered_df[filtered_df["TX_TYPE_RAW"].str.lower() == swap_filter.lower()]
+    if label_filter != "All":
+        filtered_df = filtered_df[filtered_df["SWAP TYPE"] == label_filter]
+    if isinstance(date_range, tuple) and len(date_range) == 2:
+        start_date = pd.to_datetime(date_range[0])
+        end_date = pd.to_datetime(date_range[1]) + timedelta(days=1)
+        filtered_df = filtered_df[(filtered_df["TIME_PARSED"] >= start_date) & (filtered_df["TIME_PARSED"] <= end_date)]
+    
+    # ───── Filters: Panel 2 (Numeric Range) ─────
+    with st.container():
+        col6, col7 = st.columns([1, 4])
+        with col6:
+            st.markdown("<div style='color: white; font-weight: 500;'>Filter by</div>", unsafe_allow_html=True)
+            numeric_columns = [token.upper(), "VIRTUAL", "GENESIS \nPRICE ($)", "TRANSACTION VALUE ($)", "GENESIS PRICE \n($VIRTUAL)", "VIRTUAL \nPRICE ($)"]
+            selected_col = st.selectbox("", numeric_columns)
+    
+        with col7:
+            if selected_col in filtered_df.columns and not filtered_df[selected_col].dropna().empty:
+                col_min, col_max = filtered_df[selected_col].min(), filtered_df[selected_col].max()
+                if pd.notnull(col_min) and pd.notnull(col_max) and col_min != col_max:
+                    st.markdown(f"<div style='color: white; font-weight: 500;'>Range for {selected_col}</div>", unsafe_allow_html=True)
+                    value_range = st.slider(
+                        "", float(col_min), float(col_max), (float(col_min), float(col_max)),
+                        step=0.000001, format="%.6f"
+                    )
+                    filtered_df = filtered_df[
+                        (filtered_df[selected_col] >= value_range[0]) &
+                        (filtered_df[selected_col] <= value_range[1])
+                    ]
+    
+    #--TABLE RENDERING
+    filtered_df = filtered_df.sort_values(by=sort_col, ascending=(sort_dir == "Ascending"))
+    filtered_df = filtered_df.drop(columns=["TX_TYPE_RAW", "TIME_PARSED"], errors="ignore")
+    #ordering columns
+    ordered_cols = [
+        "BLOCK", "TX HASH", "MAKER", "TX TYPE", "SWAP TYPE", "TIME",
+        token.upper(), "VIRTUAL", "GENESIS \nPRICE ($)", "TRANSACTION VALUE ($)",
+        "GENESIS PRICE \n($VIRTUAL)", "VIRTUAL \nPRICE ($)"
+    ]
+    filtered_df = filtered_df[[col for col in ordered_cols if col in filtered_df.columns]]
+    
+    html_table = filtered_df.to_html(escape=False, index=False)
+    #-- CSS FOR THE TABLE
+    scrollable_style = """
+    <style>
+    /* Wrapper container for scrollable table */
+    .scrollable {
+        max-height: 600px;
+        overflow-y: auto;
+        overflow-x: auto;
+        width: 78vw;
+        box-sizing: border-box;
+        display: block;
+        font-family: 'Epilogue', sans-serif;
+        font-size: 14px;
+        color: #222;
+    }
+    
+    /* Table styling */
+    .scrollable table {
+        width: 100%;
+        backdrop-filter: blur(10px);
+        background: rgba(255, 255, 255, 0.8);
+        border-radius: 8px;
+        box-shadow: 0 2px 8px rgba(0, 0, 0, 0.08);
+        margin: 0 auto 0 0;
+        table-layout: auto;
+        text-align: center;
+        border-collapse: separate;
+        border-spacing: 0;
+    }
+    
+    /* Table headers and cells */
+    .scrollable th,
+    .scrollable td {
+        padding: 12px 16px;
+        text-align: center;
+        min-width: 120px;
+        font-size: 16px;
+        font-weight: 400;
+    }
+    
+    /* Header styling */
+    .scrollable th {
+        background: rgba(70, 70, 70, 0.8);
+        color: #fff;
+        text-transform: uppercase;
+        font-weight: 600;
+    }
+    
+    /* Rounded top corners on first and last th */
+    .scrollable th:first-child {
+        border-top-left-radius: 8px;
+    }
+    .scrollable th:last-child {
+        border-top-right-radius: 8px;
+    }
+    </style>
+    """
+    
+    with st.container():
+        st.markdown(scrollable_style, unsafe_allow_html=True)
+        st.markdown(f"<div class='scrollable'>{html_table}</div>", unsafe_allow_html=True)
+    with tab2:
+        st.header("A dog")
+        st.image("https://static.streamlit.io/examples/dog.jpg", width=200)
+    with tab3:
+        st.header("An owl")
+        st.image("https://static.streamlit.io/examples/owl.jpg", width=200)
