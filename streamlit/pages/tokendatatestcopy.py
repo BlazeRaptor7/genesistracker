@@ -89,7 +89,7 @@ if not token:
     st.error("No token specified. Please navigate back and choose a token.")
     st.stop()
 
-st.markdown("<h1 style='margin-top: 0rem; color: white;'>TOKEN {token.upper()}</h1>", unsafe_allow_html=True)
+st.markdown(f"<h1 style='margin-top: 0rem; color: white;'>TOKEN {token.upper()}</h1>", unsafe_allow_html=True)
 
 # ───── Collection Naming ─────
 token_in_col = f"{token.upper()}_IN"
