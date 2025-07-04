@@ -11,6 +11,11 @@ st.set_page_config(layout="wide")
 # ───── Global Styling ─────
 st.markdown("""
     <style>
+    /* Remove top padding in main block */
+    section.main > div:first-child {
+        padding-top: 0rem;
+        margin-top: -3rem;
+    }
     header[data-testid="stHeader"] {
         background: transparent;
         visibility: visible;
