@@ -192,24 +192,57 @@ html_table = filtered_df.to_html(escape=False, index=False)
 #-- CSS FOR THE TABLE
 scrollable_style = """
 <style>
+/* Wrapper container for scrollable table */
 .scrollable {
-    max-height:600px; overflow-y:auto; overflow-x:auto; width: 78vw;
-    box-sizing: border-box; display:flex; justify-content: flex-start;
-    font-family: 'Epilogue', sans-serif; font-size: 14px; color: #222;
+    max-height: 600px;
+    overflow-y: auto;
+    overflow-x: auto;
+    width: 78vw;
+    box-sizing: border-box;
+    display: block;
+    font-family: 'Epilogue', sans-serif;
+    font-size: 14px;
+    color: #222;
 }
+
+/* Table styling */
 .scrollable table {
-    backdrop-filter: blur(10px); background: rgba(255, 255, 255, 0.8);
-    width:100vw; border-collapse: collapse;
-    border-radius: 8px; box-shadow: 0 2px 8px rgba(0,0,0,0.08);
-    margin: 0 auto 0 0; table-layout: auto; text-align:center;
+    width: 100%;
+    backdrop-filter: blur(10px);
+    background: rgba(255, 255, 255, 0.8);
+    border-radius: 8px;
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.08);
+    margin: 0 auto 0 0;
+    table-layout: auto;
+    text-align: center;
+    border-collapse: separate;
+    border-spacing: 0;
 }
-.scrollable th, .scrollable td {
-    padding:12px 16px; border:1px solid #ccc;
-    text-align: center; min-width: 120px; font-size:16px; font-weight:400;
+
+/* Table headers and cells */
+.scrollable th,
+.scrollable td {
+    padding: 12px 16px;
+    text-align: center;
+    min-width: 120px;
+    font-size: 16px;
+    font-weight: 400;
 }
+
+/* Header styling */
 .scrollable th {
-    position: static; top:0; background:rgba(255,255,255,0.1); color:#fff;
-    text-transform:uppercase; font-weight:600;
+    background: rgba(70, 70, 70, 0.8);
+    color: #fff;
+    text-transform: uppercase;
+    font-weight: 600;
+}
+
+/* Rounded top corners on first and last th */
+.scrollable th:first-child {
+    border-top-left-radius: 8px;
+}
+.scrollable th:last-child {
+    border-top-right-radius: 8px;
 }
 </style>
 """
