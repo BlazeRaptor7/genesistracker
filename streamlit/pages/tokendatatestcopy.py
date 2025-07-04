@@ -13,7 +13,7 @@ st.markdown("""
     <style>
     /* Remove top padding in main block */
     .block-container {
-        padding-top: 1rem !important;
+        padding-top: 0.5rem !important;
     }
     header[data-testid="stHeader"] {
         background: transparent;
