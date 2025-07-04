@@ -92,6 +92,7 @@ colh, cold = st.columns([1,3])
 with colh:
     st.markdown(f"<h1 style='margin-top: 0rem; color: white;'>TOKEN {token.upper()}</h1>", unsafe_allow_html=True)
 with cold:
+    st.subheader("")
     doc = db["New Persona"].find_one({"symbol": token.upper()})
     if doc:
         name = doc.get("name", "N/A")
