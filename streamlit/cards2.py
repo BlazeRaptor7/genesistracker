@@ -8,17 +8,23 @@ from datetime import datetime, timezone
 #--STREAMLIT CONFIGURATION
 st.set_page_config(layout="wide")
 
+#st.write("Loaded URI:", os.environ.get("MongoLink"))
+
 #--ENVIRONMENT LOADING AND DB CONNECTION
 load_dotenv()
+
 dbconn = os.getenv("MongoLink")
 client = MongoClient(dbconn)
-db = client['virtualgenesis']
+db = client['genesis_tokens_swap_info']
 
 # UI elements
 # --GLOBAL CSS
 st.markdown("""
 <style>
 /* Remove top padding in main block */
+.block-container {
+    padding-top: 0rem !important;
+}
 section.main > div:first-child {
     padding-top: 0rem;
     margin-top: -3rem;
@@ -139,17 +145,10 @@ st.markdown("<h1 style='color: white;'>SUCCESSFULLY LAUNCHED GENESIS TOKENS</h1>
 #--MODULARIZATION
 #--DATA FETCHING
 def get_token_list(db):
-    return [doc["symbol"] for doc in db["New Persona"].find({}, {'symbol': 1, '_id': 0}).sort("symbol", 1)]
-
-#--TOKEN NAME FETCHER
-def get_names_for_token(db, token):
-    return "".join(
-        f"<p>{doc['name']}</p>"
-        for doc in db["New Persona"].find({"symbol": token}, {"name": 1, "_id": 0})
-    )
+    return [doc["token_symbol"] for doc in db["swap_progress"].find({}, {'token_symbol': 1, '_id': 0}).sort("token_symbol", 1)]
+    st.write("Tokens fetched:", tokens)
 
 #--RENDERING TOKEN CARDS
-from datetime import datetime, timezone
 
 def shorten(addr):
     if isinstance(addr, str) and addr.startswith("0x") and len(addr) > 10:
@@ -157,22 +156,34 @@ def shorten(addr):
     return addr
 
 def render_token_cards(db, tokens, num_cols=5):
+    st.write("Number of tokens fetched:", len(tokens))
     for i in range(0, len(tokens), num_cols):
         chunk = tokens[i:i + num_cols]
         with st.container():
             cols = st.columns(num_cols, vertical_alignment="center")
             for j, token in enumerate(chunk):
                 with cols[j]:
-                    doc = db["New Persona"].find_one({"symbol": token})
+                    doc = db["swap_progress"].find_one({"token_symbol": token})
                     if not doc:
                         continue
 
-                    name = doc.get("name", "N/A")
-                    token_address = shorten(doc.get("token", "N/A"))
-                    dao_address = shorten(doc.get("dao", "N/A"))
+                    name = token  # You no longer have 'name', so fallback to symbol
+                    token_address = shorten(doc.get("token_address", "N/A"))
                     lp_address = shorten(doc.get("lp", "N/A"))
-                    timestamp = int(doc.get("timestamp", 0))
-                    launch_time = datetime.fromtimestamp(timestamp, tz=timezone.utc).strftime('%d-%m-%Y %H:%M')
+
+                    # Use updated_at if timestamp not available
+                    updated_at = doc.get("updated_at")
+                    if updated_at:
+                        try:
+                            if isinstance(updated_at, dict) and "$date" in updated_at:
+                                timestamp = datetime.fromisoformat(updated_at["$date"].replace("Z", "+00:00"))
+                            else:
+                                timestamp = updated_at
+                            launch_time = timestamp.strftime('%d-%m-%Y %H:%M')
+                        except Exception:
+                            launch_time = "N/A"
+                    else:
+                        launch_time = "N/A"
 
                     card_html = f"""
                     <div class="card">
@@ -180,15 +191,15 @@ def render_token_cards(db, tokens, num_cols=5):
                         <p><b>Name:</b> {name}</p>
                         <p><b>Launch Time:</b> {launch_time}</p>
                         <p><b>Token:</b> {token_address}</p>
-                        <p><b>DAO:</b> {dao_address}</p>
                         <p><b>LP:</b> {lp_address}</p>
                         <a href="/tokendatatestcopy?token={token}" target="_blank">See TXNs</a>
                     </div>
                     """
                     st.markdown(card_html, unsafe_allow_html=True)
-            st.markdown("<br>", unsafe_allow_html=True)
+                    st.write("")
 
 #CALLING HELPER FUNCTIONS
 render_sidebar()
+
 tokens = get_token_list(db)
 render_token_cards(db, tokens)
