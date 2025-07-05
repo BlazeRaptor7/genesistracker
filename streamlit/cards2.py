@@ -3,7 +3,8 @@ import os
 from dotenv import load_dotenv
 import streamlit as st
 from pymongo import MongoClient
-from datetime import datetime, timezone
+from datetime import datetime, timezone, date
+
 
 #--STREAMLIT CONFIGURATION
 st.set_page_config(layout="wide")
@@ -114,9 +115,10 @@ def render_sidebar():
         #HERE, WE CHECK WHICH PAGE WE ARE ON AND LATER USE IT TO HIGHLIGHT THE CURRENT PAGE
         current_script = os.path.basename(__file__).lower()
         routes = [
-            ("Token Transactions", "/cards2", "cards2.py"),
-            ("Token Analytics", "/tokenanalytics", "tokenanalytics.py")
+            ("TOKEN BASED ANALYSIS", "/cards2", "cards2.py"),
+            ("GLOBAL SNIPER ANALYSIS", "/global_snipers", "global_snipers.py")
         ]
+
         for label, path, filename in routes:
             is_active = filename.lower() == current_script
             bg = "#124961" if is_active else "transparent"
@@ -136,18 +138,45 @@ def render_sidebar():
                 unsafe_allow_html=True
             )
         st.markdown("---")
-        st.markdown("Made for Genesis Analytics.")
+        st.markdown("Made for Genesis Analytics @Lampros Tech Labs.")
+st.markdown("""
+<style>
+button[kind="popover"] {
+    font-size: 18px !important;
+    padding: 12px 24px !important;
+    border-radius: 8px !important;
+    background-color: #1f77b4 !important;
+    color: white !important;
+}
+</style>
+""", unsafe_allow_html=True)
 
 
 #--THE PAGE HEADER
 st.markdown("<h1 style='color: white;'>SUCCESSFULLY LAUNCHED GENESIS TOKENS</h1>", unsafe_allow_html=True)
+h1, h2 = st.columns([6,1])
+with h2:
+    from datetime import date
+    with st.popover("FILTER TOKENS",icon="🔽", use_container_width=True):
+            s1, s2, s3 = st.columns(3)
+            with s1:
+                search_query = st.text_input("Search by Token Name or Address", key="search").lower()
+            with s2:
+                start_date = st.date_input("Launch Start Date", value=date(2024, 4, 1), key="start")
+            with s3:
+                end_date = st.date_input("Launch End Date", value=datetime.now().date(), key="end")
+            
+            sort_row1, sort_row2 = st.columns([2, 1])
+            with sort_row1:
+                sort_option = st.selectbox("Sort by", ["Launch Date", "Token Name"], key="sort_field")
+            with sort_row2:
+                sort_order = st.radio("Order", ["Descending", "Ascending"], horizontal=True, key="sort_order")
+
 
 #--MODULARIZATION
 #--DATA FETCHING
 def get_token_list(db):
     return [doc["token_symbol"] for doc in db["swap_progress"].find({}, {'token_symbol': 1, '_id': 0}).sort("token_symbol", 1)]
-    st.write("Tokens fetched:", tokens)
-
 #--RENDERING TOKEN CARDS
 
 def shorten(addr):
@@ -155,34 +184,32 @@ def shorten(addr):
         return addr[:6] + "..." + addr[-4:]
     return addr
 
-def render_token_cards(db, tokens, num_cols=5):
-    st.write("Number of tokens fetched:", len(tokens))
-    for i in range(0, len(tokens), num_cols):
-        chunk = tokens[i:i + num_cols]
+def render_token_cards_from_docs(token_list, all_docs, num_cols=5):
+    doc_map = {d["token_symbol"]: d for d in all_docs}
+
+    for i in range(0, len(token_list), num_cols):
+        chunk = token_list[i:i + num_cols]
         with st.container():
             cols = st.columns(num_cols, vertical_alignment="center")
             for j, token in enumerate(chunk):
                 with cols[j]:
-                    doc = db["swap_progress"].find_one({"token_symbol": token})
+                    doc = doc_map.get(token)
                     if not doc:
                         continue
 
-                    name = token  # You no longer have 'name', so fallback to symbol
+                    name = token
                     token_address = shorten(doc.get("token_address", "N/A"))
-                    lp_address = shorten(doc.get("lp", "N/A"))
-
-                    # Use updated_at if timestamp not available
+                    full_token_address = doc.get("token_address", "")
                     updated_at = doc.get("updated_at")
-                    if updated_at:
-                        try:
-                            if isinstance(updated_at, dict) and "$date" in updated_at:
-                                timestamp = datetime.fromisoformat(updated_at["$date"].replace("Z", "+00:00"))
-                            else:
-                                timestamp = updated_at
-                            launch_time = timestamp.strftime('%d-%m-%Y %H:%M')
-                        except Exception:
-                            launch_time = "N/A"
-                    else:
+
+                    try:
+                        ts = (
+                            datetime.fromisoformat(updated_at["$date"].replace("Z", "+00:00"))
+                            if isinstance(updated_at, dict) and "$date" in updated_at
+                            else updated_at
+                        )
+                        launch_time = ts.strftime('%d-%m-%Y %H:%M')
+                    except:
                         launch_time = "N/A"
 
                     card_html = f"""
@@ -190,8 +217,7 @@ def render_token_cards(db, tokens, num_cols=5):
                         <h1>{token}</h1>
                         <p><b>Name:</b> {name}</p>
                         <p><b>Launch Time:</b> {launch_time}</p>
-                        <p><b>Token:</b> {token_address}</p>
-                        <p><b>LP:</b> {lp_address}</p>
+                        <p title="{full_token_address}"><b>Token:</b> {token_address}</p>
                         <a href="/tokendatatestcopy?token={token}" target="_blank">See TXNs</a>
                     </div>
                     """
@@ -200,6 +226,49 @@ def render_token_cards(db, tokens, num_cols=5):
 
 #CALLING HELPER FUNCTIONS
 render_sidebar()
+# 1. Default Dates
+today = datetime.now().date()
+default_start = date(2024, 1, 1)
+start_date = start_date or default_start
+end_date = end_date or today
 
-tokens = get_token_list(db)
-render_token_cards(db, tokens)
+# 2. Fetch all token docs
+all_docs = list(db["swap_progress"].find({}))
+filtered_tokens = []
+
+for doc in all_docs:
+    symbol = doc.get("token_symbol", "").lower()
+    address = doc.get("token_address", "").lower()
+    updated_at = doc.get("updated_at")
+
+    # Parse date safely
+    try:
+        if isinstance(updated_at, dict) and "$date" in updated_at:
+            ts = datetime.fromisoformat(updated_at["$date"].replace("Z", "+00:00"))
+        elif isinstance(updated_at, datetime):
+            ts = updated_at
+        else:
+            continue
+    except:
+        continue
+
+    # Filter logic
+    if search_query and search_query not in symbol and search_query not in address:
+        continue
+    if not (start_date <= ts.date() <= end_date):
+        continue
+
+    filtered_tokens.append(doc["token_symbol"])
+
+# 3. Sort tokens by launch time descending
+# 3. Sort tokens based on user choice
+reverse_order = sort_order == "Descending"
+
+if sort_option == "Launch Time":
+    filtered_tokens = sorted(filtered_tokens, key=lambda t: next(
+        (d.get("updated_at") for d in all_docs if d.get("token_symbol") == t), datetime.min
+    ), reverse=reverse_order)
+else:  # Sort by Name
+    filtered_tokens = sorted(filtered_tokens, key=lambda t: t.lower(), reverse=reverse_order)
+
+render_token_cards_from_docs(filtered_tokens, all_docs)
