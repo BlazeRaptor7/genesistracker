@@ -3,13 +3,13 @@ from dotenv import load_dotenv
 import pandas as pd
 import streamlit as st
 from pymongo import MongoClient
-from datetime import timedelta, datetime, timezone
+from datetime import timedelta, datetime, timezone, time
 from random import randint
 import altair as alt
 from collections import defaultdict, deque
 
 # ───── Streamlit Setup ─────
-st.set_page_config(layout="wide")
+st.set_page_config(layout="wide", page_title="Sniper Analysis by Lampros")
 
 # ───── Global Styling ─────
 st.markdown("""
@@ -45,18 +45,52 @@ st.markdown("""
         box-sizing: border-box;
         background: radial-gradient(circle, rgba(18, 73, 97, 1) 0%, rgba(5, 27, 64, 1) 100%);
     }
+    .glass-kpi {
+        background: rgba(255, 255, 255, 0.12);
+        border-radius: 12px;
+        padding: 1rem;
+        backdrop-filter: blur(10px);
+        -webkit-backdrop-filter: blur(10px);
+        border: 1px solid rgba(255, 255, 255, 0.25);
+        box-shadow: 0 4px 16px rgba(0, 0, 0, 0.12);
+        color: white;
+        text-align: center;
+    }
+    .glass-kpi h4 {
+        font-size: 14px;
+        font-weight: 600;
+        text-align: center;
+        margin-bottom: 0; line-height: 1;
+        text-transform: uppercase;
+        color: #ffffffcc;
+    }
+    .glass-kpi p {
+        font-size: 35px;
+        font-weight: bold;
+        text-align: center;
+        margin: 0; line-height: 1;
+    }
+    .kpi-inner {
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        justify-content: center;
+    }
     </style>
 """, unsafe_allow_html=True)
 
 # ───── Sidebar ─────
 def render_sidebar():
-    current_script = "tokendatatestcopy.py"  # set manually
-    routes = [
-        ("Token Transactions", "/cards2", "cards2.py"),
-        ("Token Analytics", "/tokenanalytics", "tokenanalytics.py")
-    ]
+    """Render the custom sidebar with navigation and branding."""
     with st.sidebar:
         st.markdown("## Navigation")
+        #HERE, WE CHECK WHICH PAGE WE ARE ON AND LATER USE IT TO HIGHLIGHT THE CURRENT PAGE
+        current_script = os.path.basename(__file__).lower()
+        routes = [
+            ("SELECT ANOTHER TOKEN", "/cards2", "cards2.py"),
+            ("GLOBAL SNIPER ANALYSIS", "/global_snipers", "global_snipers.py")
+        ]
+
         for label, path, filename in routes:
             is_active = filename.lower() == current_script
             bg = "#124961" if is_active else "transparent"
@@ -76,13 +110,69 @@ def render_sidebar():
                 unsafe_allow_html=True
             )
         st.markdown("---")
-        st.markdown("Made for Genesis Analytics.")
+        st.markdown("Made for Genesis Analytics @Lampros Tech Labs.")
 
 render_sidebar()
-
+#-- CSS FOR THE TABLE
+scrollable_style = """
+<style>
+    /* Wrapper container for scrollable table */
+    .scrollable {
+        max-height: 300px;
+        overflow-y: auto;
+        overflow-x: auto;
+        width: 78vw;
+        box-sizing: border-box;
+        display: block;
+        font-family: 'Epilogue', sans-serif;
+        font-size: 14px;
+        color: #222;
+    }
+    
+    /* Table styling */
+    .scrollable table {
+        width: 100%;
+        backdrop-filter: blur(10px);
+        background: rgba(255, 255, 255, 0.8);
+        border-radius: 8px;
+        box-shadow: 0 2px 8px rgba(0, 0, 0, 0.08);
+        margin: 0 auto 0 0;
+        table-layout: auto;
+        text-align: center;
+        border-collapse: separate;
+        border-spacing: 0;
+    }
+    
+    /* Table headers and cells */
+    .scrollable th,
+    .scrollable td {
+        padding: 1px 3px;
+        text-align: center;
+        font-size: 14px;
+        font-weight: 300;
+    }
+    
+    /* Header styling */
+    .scrollable th {
+        background: rgba(70, 70, 70, 0.8);
+        color: #fff;
+        text-transform: uppercase;
+        font-weight: 400;
+    }
+    
+    /* Rounded top corners on first and last th */
+    .scrollable th:first-child {
+        border-top-left-radius: 8px;
+    }
+    .scrollable th:last-child {
+        border-top-right-radius: 8px;
+    }
+    </style>
+    """
+st.markdown(scrollable_style, unsafe_allow_html=True)
 # ───── Load DB Connection ─────
 load_dotenv()
-dbconn = "mongodb+srv://abhishekrajput:SmDafKmJcfC4HK4H@virtualgenesisdata.wbeqoft.mongodb.net/"
+dbconn = os.getenv("MongoLink")
 client = MongoClient(dbconn)
 db = client['genesis_tokens_swap_info']
 
@@ -91,8 +181,8 @@ db = client['genesis_tokens_swap_info']
 query_params = st.query_params
 token = query_params.get('token', '').lower().strip()
 if not token:
-    st.error("No token specified. Please navigate back and choose a token.")
-    st.stop()
+    st.warning("⚠️ No token specified. Redirecting to token choice...")
+    st.switch_page("cards2.py")
 colh, cold = st.columns([1, 3])
 with colh:
     st.markdown(f"<h1 style='margin-top: 0rem; color: white;'>TOKEN {token.upper()}</h1>", unsafe_allow_html=True)
@@ -256,71 +346,12 @@ with tab1:
     ]
     filtered_df = filtered_df[[col for col in ordered_cols if col in filtered_df.columns]]
     
-    html_table = filtered_df.to_html(escape=False, index=False)
-    #-- CSS FOR THE TABLE
-    scrollable_style = """
-    <style>
-    /* Wrapper container for scrollable table */
-    .scrollable {
-        max-height: 600px;
-        overflow-y: auto;
-        overflow-x: auto;
-        width: 78vw;
-        box-sizing: border-box;
-        display: block;
-        font-family: 'Epilogue', sans-serif;
-        font-size: 14px;
-        color: #222;
-    }
-    
-    /* Table styling */
-    .scrollable table {
-        width: 100%;
-        backdrop-filter: blur(10px);
-        background: rgba(255, 255, 255, 0.8);
-        border-radius: 8px;
-        box-shadow: 0 2px 8px rgba(0, 0, 0, 0.08);
-        margin: 0 auto 0 0;
-        table-layout: auto;
-        text-align: center;
-        border-collapse: separate;
-        border-spacing: 0;
-    }
-    
-    /* Table headers and cells */
-    .scrollable th,
-    .scrollable td {
-        padding: 12px 16px;
-        text-align: center;
-        min-width: 120px;
-        font-size: 16px;
-        font-weight: 400;
-    }
-    
-    /* Header styling */
-    .scrollable th {
-        background: rgba(70, 70, 70, 0.8);
-        color: #fff;
-        text-transform: uppercase;
-        font-weight: 600;
-    }
-    
-    /* Rounded top corners on first and last th */
-    .scrollable th:first-child {
-        border-top-left-radius: 8px;
-    }
-    .scrollable th:last-child {
-        border-top-right-radius: 8px;
-    }
-    </style>
-    """
+    html_table = filtered_df.to_html(escape=False, index=False, float_format="%.4f")
     
     with st.container():
         st.markdown(scrollable_style, unsafe_allow_html=True)
         st.markdown(f"<div class='scrollable'>{html_table}</div>", unsafe_allow_html=True)
 with tab2:
-    # ───── Streamlit Setup ─────
-    st.set_page_config(page_title="Sniper PnL Dashboard")
 
     # ───── Token from Query Params ─────
     token_upper = token.upper()
@@ -412,7 +443,7 @@ with tab2:
         merged["time_diff"] = (merged["timestampReadable_sell"] - merged["timestampReadable_buy"]).dt.total_seconds()
         quick_sells = merged[merged["time_diff"].between(0, 20 * 60)]
         potential_sniper_df = df_sniper_buys[df_sniper_buys["maker"].isin(quick_sells["maker"])].copy()
-        st.write("🔍 Potential sniper rows found:", len(potential_sniper_df))
+        #st.write("🔍 Potential sniper rows found:", len(potential_sniper_df))
         return potential_sniper_df, combined_df
 
     # ───── PnL Calculation ─────
@@ -498,17 +529,17 @@ with tab2:
 
             results.append({
                 "Wallet Address": maker,
-                "Net PnL": round(realized, 4),
-                "Unrealized PnL": round(unrealized, 4),
-                "Remaining Tokens": round(remaining, 4),
-                "Buy Txn Count": buy_txn_count,
-                "Sell Txn Count": sell_txn_count,
+                "Net PnL ($)": round(realized, 4),
+                "Unrealized PnL ($)": round(unrealized, 4),
+                "Remaining Tokens": float(f"{remaining:.4f}"),
+                "Txn Count\n(BUY)": buy_txn_count,
+                "Txn Count\n(SELL)": sell_txn_count,
                 "First Buy Time": first_buy_time,
                 "Last Sell Time": last_sell_time,
-                "Average Buy Price USD": round(avg_buy_price, 4),
-                "Average Sell Price USD": round(avg_sell_price, 4),
+                "Average Buy Price ($)": round(avg_buy_price, 4),
+                "Average Sell Price ($)": round(avg_sell_price, 4),
                 "Total Tax Paid": round(total_tax_paid, 4),
-                "Total Tx Fees Paid": round(total_tx_fees, 4)
+                "Total Tx Fees Paid (ETH)": round(total_tx_fees, 4)
             })
         print("Returning results with rows:", len(results))
         print("Result keys:", results[0].keys() if results else "No results")
@@ -527,41 +558,107 @@ with tab2:
         potential_sniper_df, combined_df = process_sniper_data(combined_df, token_launch_blocks)
         
         pnl_df = calculate_pnl(potential_sniper_df, combined_df)
-        st.write("📊 Final sniper PnL rows:", len(pnl_df))
 
-    #st.write("filtered_df columns:", filtered_df.columns.tolist())
-
-    # ───── Display Table ─────
+    #-----------------------------------------------------------------------------------------------------------------------------
+    # Streamlit UI
     st.title(f"Potential Snipers – PnL Overview for {token_upper}")
-    pnl_df.insert(0, "S.No", range(1, len(pnl_df)+1))
-    st.dataframe(pnl_df, hide_index=True)
+    st.subheader("📊 Sniper Summary Table")
 
-    if pnl_df.empty or "Wallet Address" not in pnl_df.columns:
-        st.warning("No sniper data available for this token.")
-        st.stop()
+    # Create filtered_df and add S.No once, cleanly
+    filtered_df = pnl_df.copy().reset_index(drop=True)
+    #filtered_df["S.No"] = range(1, len(filtered_df) + 1)
 
-    # ───── KPIs ─────
-    st.subheader("Sniper KPIs")
-    k1, k2, k3, k4 = st.columns(4)
-    #st.write("✅ Columns in filtered_df:", pnl_df.columns.tolist())
+    # Sort by Net PnL descending
+    filtered_df = filtered_df.sort_values(by="Net PnL ($)", ascending=False).reset_index(drop=True)
+    #filtered_df["S.No"] = range(1, len(filtered_df) + 1)
+    #st.dataframe(filtered_df, hide_index=True)
 
-    k1.metric("Total Unique Snipers", pnl_df["Wallet Address"].nunique())
-    success_rate = (pnl_df["Net PnL"] > 0).mean() * 100
-    k2.metric("Success Rate of Trades", f"{success_rate:.2f}%")
-    k3.metric("Total Realized PnL", f"${pnl_df['Net PnL'].sum():,.2f}")
-    k4.metric("Total Unrealized PnL", f"${pnl_df['Unrealized PnL'].sum():,.2f}")
+    html_table_sniper = filtered_df.to_html(escape=False, index=False,  float_format="%.4f")
+    st.markdown(f"<div class='scrollable'>{html_table_sniper}</div>", unsafe_allow_html=True)
 
-    # ───── Top 5 Bar Chart ─────
-    st.subheader("Top 5 Traders by Net PnL")
-    top5 = pnl_df.nlargest(5, "Net PnL")
-    bar = alt.Chart(top5).mark_bar(cornerRadiusTopLeft=6, cornerRadiusTopRight=6).encode(
-        y=alt.Y("Wallet Address:N", sort="-x"),
-        x=alt.X("Net PnL:Q"),
-        color=alt.value("#3fa4ff"),
-        tooltip=["Wallet Address", "Net PnL"]
-    ).properties(height=300)
-    st.altair_chart(bar, use_container_width=True)
+
+    # KPI Section
+    num_unique_snipers = filtered_df['Wallet Address'].nunique()
+    successful_snipers = filtered_df[filtered_df['Net PnL ($)'] > 0]
+    success_rate = (len(successful_snipers) / num_unique_snipers * 100) if num_unique_snipers > 0 else 0
+
+    total_realized_pnl = filtered_df['Net PnL ($)'].sum()
+    total_unrealized_pnl = filtered_df['Unrealized PnL ($)'].sum()
+
+    # Total tokens held by snipers
+    total_tokens_held = filtered_df['Remaining Tokens'].sum()
+    total_supply = 1_000_000_000  # adjust if needed
+    tokens_held_percentage = (total_tokens_held / total_supply) * 100 if total_supply > 0 else 0
+
+    st.subheader('Sniper KPIs')
+    kpi1, kpi2, kpi3, kpi4, kpi5 = st.columns(5)
+
+    with kpi1:
+        st.markdown(f"""
+            <div class="glass-kpi">
+                <h4>Total Unique Snipers</h4>
+                <p>{num_unique_snipers}</p>
+            </div>
+        """, unsafe_allow_html=True)
+
+    with kpi2:
+        st.markdown(f"""
+            <div class="glass-kpi">
+                <h4>Success Rate of Trades (%)</h4>
+                <p>{success_rate:.2f}%</p>
+            </div>
+        """, unsafe_allow_html=True)
+
+    with kpi3:
+        st.markdown(f"""
+            <div class="glass-kpi">
+                <h4>Total Realized PnL</h4>
+                <p>${total_realized_pnl:,.2f}</p>
+            </div>
+        """, unsafe_allow_html=True)
+
+    with kpi4:
+        st.markdown(f"""
+            <div class="glass-kpi">
+                <h4>Total Unrealized PnL</h4>
+                <p>${total_unrealized_pnl:,.2f}</p>
+            </div>
+        """, unsafe_allow_html=True)
+
+    with kpi5:
+        st.markdown(f"""
+            <div class="glass-kpi">
+                <h4>      Total Tokens Held by Snipers (%)</h4>
+                <p>{tokens_held_percentage:.4f}%</p>
+            </div>
+        """, unsafe_allow_html=True)
+
+    # Top 5 Traders by Net PnL
+    st.subheader('Top 5 Traders by Total Net PnL')
+    top5 = filtered_df.nlargest(5, 'Net PnL ($)')
+    st.markdown("""
+        <style>
+        .glass-chart {
+            padding: 1rem;
+            margin: 1rem 0;
+            background: rgba(255, 255, 255, 0.12);
+            border-radius: 12px;
+            backdrop-filter: blur(10px);
+            -webkit-backdrop-filter: blur(10px);
+            border: 1px solid rgba(255, 255, 255, 0.25);
+            box-shadow: 0 4px 16px rgba(0, 0, 0, 0.12);
+        }
+        </style>
+    """, unsafe_allow_html=True)
+    bar_chart = alt.Chart(top5).mark_bar().encode(
+        y=alt.Y('Wallet Address:N', title='Wallet Address', sort=top5['Wallet Address'].tolist()),
+        x=alt.X('Net PnL ($):Q', title='Net PnL ($)'),
+        tooltip=['Wallet Address', 'Net PnL ($)']
+    ).properties(
+        width=600,
+        height=300
+    )
+    st.altair_chart(bar_chart, use_container_width=True)
 
 with tab3:
-        st.header("An owl")
-        st.image("https://static.streamlit.io/examples/owl.jpg", width=200)
+        st.header("MORE INSIGHTS INCOMING, STAY TUNED!")
