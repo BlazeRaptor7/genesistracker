@@ -5,7 +5,6 @@ import streamlit as st
 from pymongo import MongoClient
 from datetime import timedelta, datetime, timezone
 from random import randint
-import matplotlib.pyplot as plt
 import altair as alt
 from collections import defaultdict, deque
 
